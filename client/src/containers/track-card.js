@@ -4,21 +4,50 @@ import { colors, mq } from '../styles';
 // Read more on Reach Router "Link" here:
 // https://reach.tech/router/tutorial/03-link
 import {Link} from '@reach/router';
+import {gql, useMutation} from '@apollo/client';
 import { humanReadableTimeFromSeconds } from '../utils/helpers';
+
+/**
+ * Mutation to increment a track's number of views
+ * (exported for tests)
+ */
+const INCREMENT_TRACK_VIEWS = gql`
+ mutation IncrementTrackViewsMutation($incrementTrackViewsId: ID!) {
+   incrementTrackViews(id: $incrementTrackViewsId) {
+     code
+     success
+     message
+     track {
+       id
+       numberOfViews
+     }
+   }
+ }
+`;
 
 /**
  * Track Card component renders basic info in a card format
  * for each track populating the tracks grid homepage.
  */
-
 // added id to our track prop to access the track id
 const TrackCard = ({ track }) => {
   const { title, thumbnail, author, length, modulesCount, id } = track;
 
+  const [incrementTrackViews] = useMutation(INCREMENT_TRACK_VIEWS, {
+    variables: {incrementTrackViewsId: id},
+    // to observe what the mutation response returns
+    onCompleted: data => {
+      console.log(data);
+    }
+  });
+
   // added a to prop to the CardContainer, which will tell 
   // the router where to go when the component is clicked
   return (
-    <CardContainer to={`/track/${id}`}>
+    <CardContainer 
+      to={`/track/${id}`}
+      onClick={incrementTrackViews}
+    >
       <CardContent>
         <CardImageContainer>
           <CardImage src={thumbnail} alt={title} />
